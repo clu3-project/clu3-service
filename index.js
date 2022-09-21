@@ -38,12 +38,13 @@ app.post('/verify', async (req, res) => {
         const {success} = await verify(process.env.hcaptchaSecret, req.body.token);
 
         if(success) {
-            let signedMessage = await wallet.signMessage(req.body.senderAddress+'-'+req.body.timeStamp+'-'+ cluID);
+            let timestamp = Date.now().toString();
+            let signedMessage = await wallet.signMessage(req.body.senderAddress+'-'+timestamp+'-'+ cluID);
                 return res.status(200).json({
                     success: true,
                     data: {
                         cluID: cluID,
-                        timeStamp: req.body.timeStamp,
+                        timeStamp: timestamp,
                         signedMessage: signedMessage
                     }
                 });
