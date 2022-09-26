@@ -3,17 +3,13 @@ const express = require('express');
 const {verify} = require('hcaptcha');
 const cors = require('cors')
 const bodyParser = require('body-parser');
-const { ethers } = require("ethers");
-
+const EthCrypto = require('eth-crypto');
 
 const PORT = 8080;
 
 const app = express();
 
 const cluID = '0';
-
-let wallet = new ethers.Wallet(process.env.PRIVATE_KEY);
-
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
@@ -39,13 +35,22 @@ app.post('/verify', async (req, res) => {
 
         if(success) {
             let timestamp = Date.now().toString();
-            let signedMessage = await wallet.signMessage(req.body.senderAddress+'-'+timestamp+'-'+ cluID);
+            const message = EthCrypto.hash.keccak256([
+                { type: "address", value: req.body.senderAddress },
+                { type: "uint256", value: timestamp },
+                { type: "uint256", value: cluID },
+              ]);
+            console.log(req.body.senderAddress, timestamp, cluID);
+            const signature = EthCrypto.sign(
+                process.env.PRIVATE_KEY, // privateKey
+                message // hash of message
+            );
                 return res.status(200).json({
                     success: true,
                     data: {
                         cluID: cluID,
-                        timeStamp: timestamp,
-                        signedMessage: signedMessage
+                        timestamp: timestamp,
+                        messageSignature: signature
                     }
                 });
         } else {
