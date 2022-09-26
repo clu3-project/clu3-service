@@ -25,7 +25,7 @@ app.use(bodyParser.json())
 app.use(cors())
 
 app.post('/verify', async (req, res) => {
-    console.log('test production')
+
     if(!req.body.token) {
         return res.status(400).json({error: 'No token provided'});
     }
